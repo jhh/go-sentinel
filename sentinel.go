@@ -3,28 +3,48 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
+	"strconv"
 )
 
-func readTemp() (string, error) {
-	f, err := os.Open("/sys/class/thermal/thermal_zone0/temp")
+var (
+	tempDev = "/sys/class/thermal/thermal_zone0/temp"
+	port    = os.Getenv("PORT")
+)
+
+func readTemp() (float32, error) {
+	f, err := os.Open(tempDev)
 	defer f.Close()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return string(b), nil
+
+	tt, err := strconv.Atoi(string(b[:len(b)-1]))
+	if err != nil {
+		return 0, err
+	}
+
+	return float32(tt) / 1000.0, nil
+}
+
+func tempHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := readTemp()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "temperature = %0.1f", t)
 }
 
 func main() {
-	ts, err := readTemp()
-	if err != nil {
-		fmt.Println("err")
-		os.Exit(-1)
-	}
-	fmt.Printf("ts=%q", ts)
+	log.SetFlags(0)
+	log.Println("listening on http://localhost:" + port)
+	log.Fatal(http.ListenAndServe(":"+port, http.HandlerFunc(tempHandler)))
 }
