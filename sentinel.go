@@ -46,6 +46,6 @@ func tempHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	log.SetFlags(0)
-	log.Println("listening on http://localhost:" + port)
+	log.Println("listening on port " + port)
 	log.Fatal(http.ListenAndServe(":"+port, http.HandlerFunc(tempHandler)))
 }
