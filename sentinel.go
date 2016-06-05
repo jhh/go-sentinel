@@ -37,6 +37,7 @@ func readTemp() (float32, error) {
 func tempHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := readTemp()
 	if err != nil {
+		log.Println("tempHandler:", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
