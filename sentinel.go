@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 )
 
@@ -12,8 +13,7 @@ func readTemp() (string, error) {
 		return "", err
 	}
 
-	b := make([]byte, 10)
-	_, err = f.Read(b)
+	b, err := ioutil.ReadAll(f)
 	if err != nil {
 		return "", err
 	}
